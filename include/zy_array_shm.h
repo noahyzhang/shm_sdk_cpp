@@ -1,7 +1,6 @@
 /**
  * @file zy_array_shm.h
- * @author your name (you@domain.com)
- * @brief 
+ * @author noahyzhang
  * @version 0.1
  * @date 2023-04-20
  * 
@@ -108,7 +107,7 @@ private:
      * @param header 
      * @return uint32_t 
      */
-    uint32_t parse_header(ARRAY_SHM_HEADER* header) override;
+    uint32_t parse_header(const ARRAY_SHM_HEADER& header) override;
 
 private:
     bool is_init_{false};
@@ -142,6 +141,9 @@ size_t CArrayShm<T>::insert(const std::vector<T>& node_vec) {
     size_t cur_node_count = 0;
     for (size_t i = 0; i < node_vec.size() && i < array_header_.max_node_count; ++i) {
         T* p_node = this->get_node_by_pos(i);
+        if (p_node == nullptr) {
+            continue;
+        }
         memcpy(p_node, &node_vec[i], sizeof(T));
         ++cur_node_count;
     }
@@ -166,18 +168,23 @@ bool CArrayShm<T>::set_header() {
 }
 
 template <class T>
-uint32_t CArrayShm<T>::parse_header(ARRAY_SHM_HEADER* p_header) {
-    uint32_t version = p_header->version;
+uint32_t CArrayShm<T>::parse_header(const ARRAY_SHM_HEADER& p_header) {
+    uint32_t version = p_header.version;
     if (version != g_shm_version) {
-        this->set_err_msg("[CArrayShm::parse_header] version check error");
+        char buf[1024] = {0};
+        snprintf(buf, sizeof(buf), "[CArrayShm::parse_header] version check error, head info,"
+            "version: %d, curNodeCount: %d, maxNodeCount: %d, headerCRCVal: %d, timeNs: %ld",
+            p_header.version, p_header.cur_node_count, p_header.max_node_count,
+            p_header.header_crc_val, p_header.time_ns);
+        this->set_err_msg(buf);
         return 0;
     }
     // CRC 校验
-    memcpy(&array_header_, p_header, sizeof(ARRAY_SHM_HEADER));
+    memcpy(&array_header_, &p_header, sizeof(ARRAY_SHM_HEADER));
     array_header_.header_crc_val = 0;
     uint32_t crc = calc_crc_val((unsigned char*)&array_header_, sizeof(ARRAY_SHM_HEADER));
-    array_header_.header_crc_val = p_header->header_crc_val;
-    if (crc != p_header->header_crc_val) {
+    array_header_.header_crc_val = p_header.header_crc_val;
+    if (crc != p_header.header_crc_val) {
         this->set_err_msg("[CArrayShm::parse_header] CRC calibration error");
         return 0;
     }

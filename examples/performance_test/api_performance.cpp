@@ -28,7 +28,7 @@ void shm_performance() {
 
     for (size_t i = 0; i < TEST_COUNT; ++i) {
         std::vector<int> arr{100, 10};
-        auto count = array_shm.insert(arr);
+        array_shm.insert(arr);
     }
 
     auto end_tm = std::chrono::steady_clock().now();

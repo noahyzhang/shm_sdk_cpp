@@ -82,7 +82,7 @@ protected:
      * @param header 
      * @return uint32_t 
      */
-    virtual uint32_t parse_header(TH* header) = 0;
+    virtual uint32_t parse_header(const TH& header) = 0;
 
 public:
     /**
@@ -250,7 +250,7 @@ bool CShm<T, TH>::init(size_t shm_key, size_t shm_body_size /* =0 */, bool is_cr
             return false;
         }
         // 虚函数，继承类实现，返回共享内存的大小
-        size_t length = this->parse_header(header);
+        size_t length = this->parse_header(*header);
         do_detach(header);
         if (length <= 0) {
             return false;

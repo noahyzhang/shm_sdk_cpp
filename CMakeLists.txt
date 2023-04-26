@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 2.8)
 
 project(thread_mem_shm_sdk_cpp)
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall -Werror -Wextra -fPIC -Wno-error=unused-parameter -fno-omit-frame-pointer")
+
 include_directories(
     ./include
 )
