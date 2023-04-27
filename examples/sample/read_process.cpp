@@ -40,14 +40,15 @@ int main() {
             << ", crc: " << header.header_crc_val << std::endl;
         bool ret = array_shm.traverse([](DataNode* node) ->bool {
             std::cout << "tid: " << node->tid << ", arena_id: " << node->arena_id
-                << ", allocated_kb: " << node->allocated_kb << ", deallocated_kb: " << node->deallocated_kb << " ";
+                << ", allocated_kb: " << node->allocated_kb
+                << ", deallocated_kb: " << node->deallocated_kb << std::endl;
             return true;
         });
         sem.unlock();
 
         if (!ret) {
             std::cout << "traverse failed, err: " << array_shm.get_err_msg() << std::endl;
-            return -2;
+            continue;
         }
         std::cout << std::endl << std::endl;
         std::this_thread::sleep_for(std::chrono::seconds(1));

@@ -71,7 +71,7 @@ public:
      * @return true 
      * @return false 
      */
-    size_t insert(const std::vector<T>& node_vec);
+    int insert(const std::vector<T>& node_vec);
 
     /**
      * @brief 遍历共享内存，对每个节点调用回调函数处理
@@ -133,10 +133,10 @@ bool CArrayShm<T>::init(size_t shm_key, size_t max_node_count, bool is_create) {
 }
 
 template <class T>
-size_t CArrayShm<T>::insert(const std::vector<T>& node_vec) {
+int CArrayShm<T>::insert(const std::vector<T>& node_vec) {
     if (!is_init_) {
         this->set_err_msg("[CArrayShm:insert] init might be mistaken");
-        return false;
+        return -1;
     }
     size_t cur_node_count = 0;
     for (size_t i = 0; i < node_vec.size() && i < array_header_.max_node_count; ++i) {
@@ -196,6 +196,19 @@ template <class T>
 bool CArrayShm<T>::traverse(TRAVERSE_METHOD_FUNC node_func) {
     if (!is_init_) {
         this->set_err_msg("[CArrayShm::traverse] init might be mistaken");
+        return false;
+    }
+    ARRAY_SHM_HEADER header;
+    if (!get_header(&header)) {
+        char buf[1024] = {0};
+        snprintf(buf, sizeof(buf), "[CArrayShm::traverse] get_header err: %s", this->get_err_msg().c_str());
+        this->set_err_msg(buf);
+        return false;
+    }
+    if (parse_header(header) == 0) {
+        char buf[1024] = {0};
+        snprintf(buf, sizeof(buf), "[CArrayShm::traverse] parse_header err: %s", this->get_err_msg().c_str());
+        this->set_err_msg(buf);
         return false;
     }
     T* p_node = nullptr;

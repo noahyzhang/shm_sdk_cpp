@@ -49,7 +49,7 @@ int main() {
         std::vector<DataNode> arr = gen_random_arr(20);
 
         sem.lock();
-        auto count = array_shm.insert(arr);
+        int count = array_shm.insert(arr);
 
         std::cout << "insert node count: " << count << std::endl;
         std::this_thread::sleep_for(std::chrono::seconds(5));
